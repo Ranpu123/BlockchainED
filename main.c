@@ -53,32 +53,20 @@ void generateBlockData(unsigned char * data){
 
 void mineBlock(BlocoNaoMinerado * blocoAMinerar, unsigned char * h){
     unsigned char hash[SHA256_DIGEST_LENGTH];
-    int flag = 1;
-    while(flag){
-        
+    do{
+        blocoAMinerar->nonce += 1;
+
         //Gera o hash do bloco.
         SHA256((unsigned char *)&(*blocoAMinerar), sizeof((*blocoAMinerar)),hash);
-        
-        //Verifica se os 3 primeiras posições do vetor são 0.
-        for(int i=0; i < 3 ;i++){
-            if((unsigned long)hash[i] == 0){
-                flag = 0;
-            }else{
-                flag = 1;
-                break;
-            }
-        }
 
-        if(flag){
-            blocoAMinerar->nonce+=1;
-        }
-    }
+    //Verifica se os 3 primeiras posições do vetor são 0.
+    }while(((unsigned long)hash[0] + (unsigned long)hash[1] + (unsigned long)hash[2] != 0));
     cpyhash(h,hash);
 }
 
 void createBlock(BlocoNaoMinerado * blocoAMinerar, int i, unsigned char * hash){
     blocoAMinerar->numero = i;
-    blocoAMinerar->nonce = 0;
+    blocoAMinerar->nonce = -1;
     cpyhash(blocoAMinerar->hashAnterior,hash);
     generateBlockData(blocoAMinerar->data);
     mineBlock(blocoAMinerar,hash);
@@ -95,7 +83,7 @@ int main(){
     int cont = 0;
     
     //Arquivo Binário com os dados da blockchain
-    FILE * pFile = fopen("blockchain.dat","ab");
+    FILE * pFile = fopen("blockchain.dat","wb");
     
 
     for(int i = 1; i<=16; i++){
