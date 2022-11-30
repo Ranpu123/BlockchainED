@@ -72,8 +72,25 @@ void createBlock(BlocoNaoMinerado * blocoAMinerar, int i, unsigned char * hash){
     mineBlock(blocoAMinerar,hash);
 }
 
+void ordena(int vetor[], int tamanho)
+{
+    for (int i = 0; i < tamanho; i++)
+    {
+        for (int j = i; j < tamanho; j++)
+        {
+            if (vetor[i] > vetor[j])
+            {
+                int temp = vetor[i];
+                vetor[i] = vetor[j];
+                vetor[j] = temp;
+            }
+        }
+    }
+}
+
 int main(){
-    
+    int z, aux;
+
     randNumber = seedRand(1234567);
     
     //Ultima Hash aceita gerada. No genesis o hash anterior é 0000...
@@ -108,10 +125,50 @@ int main(){
         }
     }
 
-    for (int i = 0; i<256; i++){
+    
+    int *vetoraux = wallet;
+    ordena(vetoraux, 256);
+
+    do{
+
+    printf("\n\t\t||Menu||");
+    printf("\n1-Imprimir dados de um bloco.");
+    printf("\n2-Mostrar a quantidade de Bitcoins de um endereço.");
+    printf("\n3-Mostrar a carteira com mais Bitcoins.");
+    printf("\n4-Listar endereços em ordem crescente (Relativa a quantidade de bitcoins).");
+	printf("\n5-Sair\n");
+
+    scanf("%d", &z);
+
+    switch(z){
+        case 1:
+
+        break;
+
+        case 2:
+            printf("\nInsira o endereço desejado (de 0 até 255):\n");
+            scanf("%d", &aux);
+            printf("\nO valor em Bitcoins do endereço eh de BTC$:%d,00 \n", wallet[aux]);
+        break;
+		
+		case 3:
+            printf("\nA carteira com mais bitcoins contém: BTC:%d,00", vetoraux[255]);
+		break;
+
+		case 4:
+            printf("\nQuantidades de BTC ordenadas: ");
+            for (int i = 0; i<256; i++){
+                printf("BTC:%d,00 | ", vetoraux[i]);
+            }
+		break;
+      
+    }
+    }while (z!=5);
+
+    /*for (int i = 0; i<256; i++){
         printf("|%d|", wallet[i]);
     }
-
+    */
     fclose(pFile);
     return 0;
 }
