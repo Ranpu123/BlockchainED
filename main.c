@@ -102,7 +102,7 @@ int main(){
     //Arquivo Binário com os dados da blockchain
     FILE * pFile = fopen("blockchain.dat","wb");
     
-
+    printf("Aguarde o menu para utilizar o programa\n");
     for(int i = 1; i<=16; i++){
 
         BlocoNaoMinerado blocoAMinerar;
@@ -113,8 +113,8 @@ int main(){
         buffer[cont].bloco = blocoAMinerar;
         cpyhash(buffer[cont].hash, hash);
         
-        printhash(blocoAMinerar.hashAnterior);
-        printhash(hash);
+        //printhash(blocoAMinerar.hashAnterior);
+        //printhash(hash);
 
         //Se a quantidade de blocos for 16||2, então grava no arquivo.
         if (15 == cont){
@@ -129,6 +129,8 @@ int main(){
     int *vetoraux = wallet;
     ordena(vetoraux, 256);
 
+    BlocoMinerado blocoaux;
+
     do{
 
     printf("\n\t\t||Menu||");
@@ -142,13 +144,16 @@ int main(){
 
     switch(z){
         case 1:
-
+            printf("\nInsira o bloco desejado (de 1 até 100.000):\n");
+            scanf("%d", &aux);
+            searchBlock(aux, &blocoaux);
+            printf("\nHash: %p, Numero: %d, Nonce: %d, Dados: %p", blocoaux.hash, blocoaux.bloco.numero, blocoaux.bloco.nonce, blocoaux.bloco.data);
         break;
 
         case 2:
             printf("\nInsira o endereço desejado (de 0 até 255):\n");
             scanf("%d", &aux);
-            printf("\nO valor em Bitcoins do endereço eh de BTC$:%d,00 \n", wallet[aux]);
+            printf("\nO valor em Bitcoins do endereço %d eh de BTC$:%d,00 \n", aux, wallet[aux]);
         break;
 		
 		case 3:
@@ -156,19 +161,15 @@ int main(){
 		break;
 
 		case 4:
-            printf("\nQuantidades de BTC ordenadas: ");
+            printf("\nQuantidades de BTC ordenadas: \n");
             for (int i = 0; i<256; i++){
-                printf("BTC:%d,00 | ", vetoraux[i]);
+                printf("|BTC$:%d,00|\n", vetoraux[i]);
             }
 		break;
       
     }
     }while (z!=5);
 
-    /*for (int i = 0; i<256; i++){
-        printf("|%d|", wallet[i]);
-    }
-    */
     fclose(pFile);
     return 0;
 }
