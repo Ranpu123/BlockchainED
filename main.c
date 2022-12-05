@@ -5,6 +5,11 @@
 #include "mtwister.h"
 #include "hashUtils.h"
 
+typedef struct vetorordenado{
+    int valor;
+    int posicao;
+}vetorordenado;
+
 typedef struct BlocoNaoMinerado{
   unsigned int numero;//4
   unsigned int nonce;//4
@@ -72,20 +77,15 @@ void createBlock(BlocoNaoMinerado * blocoAMinerar, int i, unsigned char * hash){
     mineBlock(blocoAMinerar,hash);
 }
 
-void ordena(int vetor[], int tamanho)
-{
-    for (int i = 0; i < tamanho; i++)
-    {
-        for (int j = i; j < tamanho; j++)
-        {
-            if (vetor[i] > vetor[j])
-            {
-                int temp = vetor[i];
-                vetor[i] = vetor[j];
-                vetor[j] = temp;
-            }
-        }
-    }
+int carregavetor(const void *a, const void *b){
+    vetorordenado *a1 = (vetorordenado *)a;
+    vetorordenado *a2 = (vetorordenado *)b;
+    if ((*a1).valor < (*a2).valor)
+        return -1;
+    else if ((*a1).valor > (*a2).valor)
+        return 1;
+    else
+        return 0;
 }
 
 int main(){
@@ -125,9 +125,13 @@ int main(){
         }
     }
 
-    
-    int *vetoraux = wallet;
-    ordena(vetoraux, 256);
+    vetorordenado vet[256];
+    for(int i = 0; i<256; i++){
+        vet[i].valor = wallet[i];
+        vet[i].posicao = i;
+    }
+
+    qsort(vet, 256, sizeof(vet[0]), carregavetor);
 
     BlocoMinerado blocoaux;
 
@@ -144,26 +148,30 @@ int main(){
 
     switch(z){
         case 1:
-            printf("\nInsira o bloco desejado (de 1 até 100.000):\n");
-            scanf("%d", &aux);
+            do{
+                printf("\nInsira o bloco desejado (de 1 até 100.000):\n");
+                scanf("%d", &aux);
+            }while (aux>100000 || aux<0);
             searchBlock(aux, &blocoaux);
             printf("\nHash: %p, Numero: %d, Nonce: %d, Dados: %p", blocoaux.hash, blocoaux.bloco.numero, blocoaux.bloco.nonce, blocoaux.bloco.data);
         break;
 
         case 2:
-            printf("\nInsira o endereço desejado (de 0 até 255):\n");
-            scanf("%d", &aux);
+            do{
+                printf("\nInsira o endereço desejado (de 0 até 255):\n");
+                scanf("%d", &aux);
+            }while (aux>255 || aux<1);
             printf("\nO valor em Bitcoins do endereço %d eh de BTC$:%d,00 \n", aux, wallet[aux]);
         break;
 		
 		case 3:
-            printf("\nA carteira com mais bitcoins contém: BTC:%d,00", vetoraux[255]);
+            printf("\nA carteira com mais bitcoins eh a carteira de numero %d, que contém: BTC:%d,00\n", vet[255].posicao, vet[255].valor);
 		break;
 
 		case 4:
-            printf("\nQuantidades de BTC ordenadas: \n");
+            printf("\nQuantidades de BTC ordenadas de menor para maior: \n");
             for (int i = 0; i<256; i++){
-                printf("|BTC$:%d,00|\n", vetoraux[i]);
+                printf("|Wallet: %d = BTC$:%d,00|\n", vet[i].posicao, vet[i].valor);
             }
 		break;
       
