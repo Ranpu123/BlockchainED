@@ -28,7 +28,7 @@ bin/main
 
 Após isso aguarde o "Menu" aparecer para inserir inputs.
 
-## 🛠️ Código Externo
+## 🖇️ Código Externo
 
 Foram utilizados os seguintes códigos fonte fornecidos pelo professor para a execução deste projeto:
 
