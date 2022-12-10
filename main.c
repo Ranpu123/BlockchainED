@@ -5,28 +5,15 @@
 #include "mtwister.h"
 #include "hashUtils.h"
 
-typedef struct BlocoNaoMinerado{
-  unsigned int numero;//4
-  unsigned int nonce;//4
-  unsigned char data[184];//nao alterar. Deve ser inicializado com zeros.
-  unsigned char hashAnterior[SHA256_DIGEST_LENGTH]; //32
-} BlocoNaoMinerado;
+//Constantes
+#define BUFFER_SIZE 16
 
-typedef struct BlocoMinerado{
-    BlocoNaoMinerado bloco;
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-}BlocoMinerado;
-
+//Variaveis Globais
 MTRand randNumber;
-
 int wallet[256] = {0};
+int walletT[256] = {0};
 
-void searchBlock(int index, BlocoMinerado * bloco){
-    FILE * pFile = fopen("blockchain.dat","rb");
-    fseek(pFile, (index-1)*sizeof(BlocoMinerado), SEEK_SET);
-    fread(bloco, sizeof(BlocoMinerado), 1, pFile);
-}
-
+//Gera Dados do Bloco - Recebe o vetor de char do bloco
 void generateBlockData(unsigned char * data){
     unsigned long qtdTransacoes = (1 + (genRandLong(&randNumber) % 61)) * 3;
     for (int i = 3; i<=qtdTransacoes; i+=3){
@@ -46,11 +33,12 @@ void generateBlockData(unsigned char * data){
         wallet[(unsigned long)endDst] += (unsigned long)qtdBitcoin;
 
     }
-    /*for (int i = qtdTransacoes; i<184; i++){
+    for (int i = qtdTransacoes; i<184; i++){
         data[i] = 0;
-    }*/
+    }
 }
 
+//Calcula o nonce correto para o hash
 void mineBlock(BlocoNaoMinerado * blocoAMinerar, unsigned char * h){
     unsigned char hash[SHA256_DIGEST_LENGTH];
     do{
@@ -64,6 +52,7 @@ void mineBlock(BlocoNaoMinerado * blocoAMinerar, unsigned char * h){
     cpyhash(h,hash);
 }
 
+//Carrega todos os dados no bloco
 void createBlock(BlocoNaoMinerado * blocoAMinerar, int i, unsigned char * hash){
     blocoAMinerar->numero = i;
     blocoAMinerar->nonce = -1;
@@ -79,14 +68,14 @@ int main(){
     //Ultima Hash aceita gerada. No genesis o hash anterior é 0000...
     unsigned char hash [SHA256_DIGEST_LENGTH] = {0};
 
-    BlocoMinerado buffer[16];
+    BlocoMinerado buffer[BUFFER_SIZE];
     int cont = 0;
     
     //Arquivo Binário com os dados da blockchain
-    FILE * pFile = fopen("blockchain.dat","wb");
+    FILE * pFile = fopen("data/blockchain.dat","wb");
     
 
-    for(int i = 1; i<=16; i++){
+    for(int i = 1; i<=2; i++){
 
         BlocoNaoMinerado blocoAMinerar;
         //Gera os dados e minera o bloco.
@@ -100,18 +89,22 @@ int main(){
         printhash(hash);
 
         //Se a quantidade de blocos for 16||2, então grava no arquivo.
-        if (15 == cont){
-            fwrite(buffer,sizeof(BlocoMinerado),16,pFile);
+        if (BUFFER_SIZE-1 == cont){
+            fwrite(buffer,sizeof(BlocoMinerado),BUFFER_SIZE,pFile);
             cont = 0;
         }else{
             cont ++;
         }
     }
 
-    for (int i = 0; i<256; i++){
-        printf("|%d|", wallet[i]);
+    if(cont){
+        fwrite(buffer,sizeof(BlocoMinerado),cont,pFile);
+        cont = 0;
     }
 
+    fwrite(wallet,sizeof(int),256,pFile);
+    printf("\n");
     fclose(pFile);
+    
     return 0;
 }
