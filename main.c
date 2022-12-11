@@ -129,7 +129,9 @@ void menu(Wallet * w){
                 scanf("%d", &aux);
             }while (aux>100000 || aux<0);
             BlocoMinerado blocoaux = searchBlock(aux);
-            printf("\nHash: %p, Numero: %d, Nonce: %d, Dados: %p\n", blocoaux.hash, blocoaux.bloco.numero, blocoaux.bloco.nonce, blocoaux.bloco.data);
+            printf("\nHash: ");
+            printhash(blocoaux.hash);
+            printf("Numero: %d\nNonce: %d\nDados: %p\n", blocoaux.bloco.numero, blocoaux.bloco.nonce, blocoaux.bloco.data);
         break;
 
         case 2:
