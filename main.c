@@ -108,6 +108,56 @@ void generateBlocks(int num_blocks){
     fclose(pFile);
 }
 
+void menu(Wallet * w){
+    int aux, z;
+
+    do{
+
+    printf("\n\t\t||Consultas||");
+    printf("\n1-Imprimir dados de um bloco.");
+    printf("\n2-Mostrar a quantidade de Bitcoins de um endereço.");
+    printf("\n3-Mostrar a carteira com mais Bitcoins.");
+    printf("\n4-Listar endereços em ordem crescente (Relativa a quantidade de bitcoins).");
+	printf("\n5-Sair\n");
+
+    scanf("%d", &z);
+
+    switch(z){
+        case 1:
+            do{
+                printf("\nInsira o bloco desejado (de 1 até 100.000):\n");
+                scanf("%d", &aux);
+            }while (aux>100000 || aux<0);
+            BlocoMinerado blocoaux = searchBlock(aux);
+            printf("\nHash: %p, Numero: %d, Nonce: %d, Dados: %p\n", blocoaux.hash, blocoaux.bloco.numero, blocoaux.bloco.nonce, blocoaux.bloco.data);
+        break;
+
+        case 2:
+            do{
+                printf("\nInsira o endereço desejado (de 0 até 255):\n");
+                scanf("%d", &aux);
+            }while (aux>255 || aux<1);
+            printf("\nO valor em Bitcoins do endereço %d eh de BTC$:%d,00 \n", aux, wallet[aux]);
+        break;
+		
+		case 3:
+            printf("\nA carteira com mais bitcoins eh a carteira de numero %d, que contém: BTC:%d,00\n", w[255].endereco, w[255].valor);
+		break;
+
+		case 4:
+            printf("\nQuantidades de BTC ordenadas de menor para maior: \n");
+            for (int i = 0; i<256; i++){
+                printf("|Wallet: %d = BTC$:%d,00|\n", w[i].endereco, w[i].valor);
+            }
+		break;
+      
+    }
+    }while (z!=5);
+
+    return;
+
+}
+
 //Carrega a struct wallet e ordena.
 void carregaDadosArquivo(Wallet * w){
     loadWallet(wallet);
@@ -121,19 +171,34 @@ void carregaDadosArquivo(Wallet * w){
 }
 
 int main(){
-    
+    int aux,z;
     randNumber = seedRand(1234567);
-    generateBlocks(100);
-
     Wallet w[256];
+
+     do{
+
+        printf("\n\t\t||Menu||");
+        printf("\n1-Gerar nova Blockchain");
+        printf("\n2-Consultas na Blockchain");
+        printf("\n3-Sair\n");
+
+        scanf("%d", &aux);
+
+        switch(aux){
+            case 1:
+                printf("\n1-Quantos Blocos deseja gerar?\n");
+                scanf("%d", &z);
+                generateBlocks(z);
+            break;
+
+            case 2:
+            carregaDadosArquivo(w);
+            menu(w);
+            break;
+        }
+
+     }while(aux!=3);
     
-    carregaDadosArquivo(w);
-
-    for(int i = 0; i<256; i++){
-        printf("%d | ",w[i].valor);
-    }
-
-    printf("\n");
 
     return 0;
 }
