@@ -11,7 +11,6 @@
 //Variaveis Globais
 MTRand randNumber;
 int wallet[256] = {0};
-int walletT[256] = {0};
 
 //Gera Dados do Bloco - Recebe o vetor de char do bloco
 void generateBlockData(unsigned char * data){
@@ -61,9 +60,7 @@ void createBlock(BlocoNaoMinerado * blocoAMinerar, int i, unsigned char * hash){
     mineBlock(blocoAMinerar,hash);
 }
 
-int main(){
-    
-    randNumber = seedRand(1234567);
+void generateBlocks(int num_blocks){
     
     //Ultima Hash aceita gerada. No genesis o hash anterior é 0000...
     unsigned char hash [SHA256_DIGEST_LENGTH] = {0};
@@ -73,9 +70,9 @@ int main(){
     
     //Arquivo Binário com os dados da blockchain
     FILE * pFile = fopen("data/blockchain.dat","wb");
-    
+    FILE * pFileText = fopen("data/blockchainText.txt","wt");
 
-    for(int i = 1; i<=2; i++){
+    for(int i = 1; i<=num_blocks; i++){
 
         BlocoNaoMinerado blocoAMinerar;
         //Gera os dados e minera o bloco.
@@ -85,12 +82,13 @@ int main(){
         buffer[cont].bloco = blocoAMinerar;
         cpyhash(buffer[cont].hash, hash);
         
-        printhash(blocoAMinerar.hashAnterior);
+        //printhash(blocoAMinerar.hashAnterior);
         printhash(hash);
 
         //Se a quantidade de blocos for 16||2, então grava no arquivo.
         if (BUFFER_SIZE-1 == cont){
             fwrite(buffer,sizeof(BlocoMinerado),BUFFER_SIZE,pFile);
+            fwrite(buffer,sizeof(BlocoMinerado),BUFFER_SIZE,pFileText);
             cont = 0;
         }else{
             cont ++;
@@ -99,12 +97,43 @@ int main(){
 
     if(cont){
         fwrite(buffer,sizeof(BlocoMinerado),cont,pFile);
+        fwrite(buffer,sizeof(BlocoMinerado),cont,pFileText);
         cont = 0;
     }
 
     fwrite(wallet,sizeof(int),256,pFile);
     printf("\n");
+    printf("BlockChain Gerada com Sucesso!");
+    printf("\n");
     fclose(pFile);
+}
+
+//Carrega a struct wallet e ordena.
+void carregaDadosArquivo(Wallet * w){
+    loadWallet(wallet);
+
+    for(int i = 0; i<256; i++){
+        w[i].endereco =(unsigned char)i;
+        w[i].valor = wallet[i];
+    }
+
+    mergeSort(w,0,255);
+}
+
+int main(){
     
+    randNumber = seedRand(1234567);
+    generateBlocks(100);
+
+    Wallet w[256];
+    
+    carregaDadosArquivo(w);
+
+    for(int i = 0; i<256; i++){
+        printf("%d | ",w[i].valor);
+    }
+
+    printf("\n");
+
     return 0;
 }
