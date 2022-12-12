@@ -196,6 +196,7 @@ int main(){
             case 1:
                 printf("\n1-Quantos Blocos deseja gerar?\n");
                 scanf("%d", &z);
+                printf("\nAguarde o fim da geração de Blocos...\n");
                 generateBlocks(z);
             break;
 
