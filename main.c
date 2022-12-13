@@ -17,12 +17,12 @@ void generateBlockData(unsigned char * data){
     unsigned long qtdTransacoes = (1 + (genRandLong(&randNumber) % 61)) * 3;
     for (int i = 3; i<=qtdTransacoes; i+=3){
         unsigned char endOrigem = (unsigned char) genRandLong(&randNumber) % 256;
-        unsigned char qtdBitcoin = (unsigned char) (1 + (genRandLong(&randNumber) % 50));
         unsigned char endDst = (unsigned char) genRandLong(&randNumber) % 256;
+        unsigned char qtdBitcoin = (unsigned char) (1 + (genRandLong(&randNumber) % 50));
 
         data[i-3] = endOrigem;
-        data[i-2] = qtdBitcoin;
-        data[i-1] = endDst;
+        data[i-2] = endDst;
+        data[i-1] = qtdBitcoin;
 
         if((unsigned long) qtdBitcoin >= wallet[(unsigned long)endOrigem]){
             wallet[(unsigned long)endOrigem] = 0;
@@ -30,7 +30,7 @@ void generateBlockData(unsigned char * data){
             wallet[(unsigned long)endOrigem] -= (unsigned long)qtdBitcoin; 
         }
         wallet[(unsigned long)endDst] += (unsigned long)qtdBitcoin;
-
+        
     }
     for (int i = qtdTransacoes; i<184; i++){
         data[i] = 0;
@@ -44,7 +44,7 @@ void mineBlock(BlocoNaoMinerado * blocoAMinerar, unsigned char * h){
         blocoAMinerar->nonce += 1;
 
         //Gera o hash do bloco.
-        SHA256((unsigned char *)&(*blocoAMinerar), sizeof((*blocoAMinerar)),hash);
+        SHA256((unsigned char *)blocoAMinerar, sizeof(BlocoNaoMinerado),hash);
 
     //Verifica se os 3 primeiras posições do vetor são 0.
     }while(((unsigned long)hash[0] + (unsigned long)hash[1] + (unsigned long)hash[2] != 0));
@@ -102,64 +102,68 @@ void generateBlocks(int num_blocks){
     }
 
     fwrite(wallet,sizeof(int),256,pFile);
+    fclose(pFile);
+    fclose(pFileText);
     printf("\n");
     printf("BlockChain Gerada com Sucesso!");
     printf("\n");
-    fclose(pFile);
 }
 
 void menu(Wallet * w){
     int aux, z;
 
     do{
+        printf("\n\t\t||Consultas||");
+        printf("\n1-Imprimir dados de um bloco.");
+        printf("\n2-Mostrar a quantidade de Bitcoins de um endereço.");
+        printf("\n3-Mostrar a carteira com mais Bitcoins.");
+        printf("\n4-Listar endereços em ordem crescente (Relativa a quantidade de bitcoins).");
+        printf("\n5-Sair\n");
 
-    printf("\n\t\t||Consultas||");
-    printf("\n1-Imprimir dados de um bloco.");
-    printf("\n2-Mostrar a quantidade de Bitcoins de um endereço.");
-    printf("\n3-Mostrar a carteira com mais Bitcoins.");
-    printf("\n4-Listar endereços em ordem crescente (Relativa a quantidade de bitcoins).");
-	printf("\n5-Sair\n");
+        scanf("%d", &z);
 
-    scanf("%d", &z);
+        switch(z){
+            case 1:;
+                BlocoMinerado blocoaux;
+                do{
+                    printf("\nInsira o bloco desejado:\n");
+                    scanf("%d", &aux);
+                    blocoaux = searchBlock(aux);
+                }while (blocoaux.bloco.numero == -1);
+                printf("\nHash: ");
+                printhash(blocoaux.hash);
+                printf("Numero: %d\nNonce: %d\nDados: ", blocoaux.bloco.numero, blocoaux.bloco.nonce);
+                for (int i = 3; i<184; i+=3){
+                        printf("%d ",blocoaux.bloco.data[i-3]);
+                        printf("%d ",blocoaux.bloco.data[i-2]);
+                        printf("%d ",blocoaux.bloco.data[i-1]);
+                }
+                printf("\n");
+            break;
 
-    switch(z){
-        case 1:
-            do{
-                printf("\nInsira o bloco desejado (de 1 até 100.000):\n");
-                scanf("%d", &aux);
-            }while (aux>100000 || aux<0);
-            BlocoMinerado blocoaux = searchBlock(aux);
-            printf("\nHash: ");
-            printhash(blocoaux.hash);
-            printf("Numero: %d\nNonce: %d\nDados: ", blocoaux.bloco.numero, blocoaux.bloco.nonce);
-            for (int i = 3; i<=184; i+=3){
-                    printf("%d ",blocoaux.bloco.data[i-3]);
-                    printf("%d ",blocoaux.bloco.data[i-2]);
-                    printf("%d ",blocoaux.bloco.data[i-1]);
-            }
-            printf("\n");
-        break;
+            case 2:
+                do{
+                    printf("\nInsira o endereço desejado (de 0 até 255):\n");
+                    scanf("%d", &aux);
+                }while (aux>255 || aux<0);
+                printf("\nO valor em Bitcoins do endereço %d eh de BTC$:%d,00 \n", aux, wallet[aux]);
+            break;
+            
+            case 3:
+                printf("\nA carteira com mais bitcoins eh a carteira de numero %d, que contém: BTC:%d,00\n", w[255].endereco, w[255].valor);
+            break;
 
-        case 2:
-            do{
-                printf("\nInsira o endereço desejado (de 0 até 255):\n");
-                scanf("%d", &aux);
-            }while (aux>255 || aux<1);
-            printf("\nO valor em Bitcoins do endereço %d eh de BTC$:%d,00 \n", aux, wallet[aux]);
-        break;
-		
-		case 3:
-            printf("\nA carteira com mais bitcoins eh a carteira de numero %d, que contém: BTC:%d,00\n", w[255].endereco, w[255].valor);
-		break;
-
-		case 4:
-            printf("\nQuantidades de BTC ordenadas de menor para maior: \n");
-            for (int i = 0; i<256; i++){
-                printf("|Wallet: %d = BTC$:%d,00|\n", w[i].endereco, w[i].valor);
-            }
-		break;
-      
-    }
+            case 4:
+                printf("\nQuantidades de BTC ordenadas de menor para maior: \n");
+                for (int i = 0; i<256; i++){
+                    printf("|Wallet: %d = BTC$:%d,00|\n", w[i].endereco, w[i].valor);
+                }
+            break;
+            case 5: break;
+            default:
+                printf("\nOpção Invalida! \n");
+            break;
+        }
     }while (z!=5);
 
     return;
@@ -203,6 +207,10 @@ int main(){
             case 2:
             carregaDadosArquivo(w);
             menu(w);
+            break;
+            case 3: break;
+            default:
+                printf("\nOpção Invalida! \n");
             break;
         }
 

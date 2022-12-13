@@ -23,6 +23,7 @@ void loadWallet(int * wallet){
     FILE * pFile = fopen("data/blockchain.dat","rb");
     fseek(pFile, -1024L, SEEK_END);
     fread(wallet, sizeof(int), 256, pFile);
+    fclose(pFile);
 }
 
 //Carrega o bloco com o indice informado
@@ -40,9 +41,9 @@ BlocoMinerado searchBlock(int index){
         fseek(pFile, (index-1)*sizeof(BlocoMinerado), SEEK_SET);
         fread(&aux, sizeof(BlocoMinerado), 1, pFile);  
     }else{
-        printf("ERRO: Indice inválido: Valor deve ser maior que 0, e menor ou igual a %d \n",sz);
+        printf("\nERRO: Indice inválido: Valor deve ser maior que 0, e menor ou igual a %d \n",sz);
     }
-
+    fclose(pFile);
     return aux;
 }
 
