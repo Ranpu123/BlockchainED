@@ -5,7 +5,7 @@
 #include "mtwister.h"
 #include "hashUtils.h"
 
-//Constantes
+//Macro
 #define BUFFER_SIZE 16
 
 //Variaveis Globais
@@ -65,6 +65,11 @@ void generateBlocks(int num_blocks){
     //Ultima Hash aceita gerada. No genesis o hash anterior é 0000...
     unsigned char hash [SHA256_DIGEST_LENGTH] = {0};
 
+    //Zerar as carteiras antes de começar um novo blockchain
+    for (int i = 0; i<256; i++){
+        wallet[i] = 0;
+    }
+
     BlocoMinerado buffer[BUFFER_SIZE];
     int cont = 0;
     
@@ -94,14 +99,14 @@ void generateBlocks(int num_blocks){
             cont ++;
         }
     }
-
+    //Descarrega o buffer se tiver algo antes de finalizar.
     if(cont){
         fwrite(buffer,sizeof(BlocoMinerado),cont,pFile);
         fwrite(buffer,sizeof(BlocoMinerado),cont,pFileText);
         cont = 0;
     }
 
-    fwrite(wallet,sizeof(int),256,pFile);
+    fwrite(wallet,sizeof(int),256,pFile);//Grava as carteiras
     fclose(pFile);
     fclose(pFileText);
     printf("\n");
@@ -138,7 +143,8 @@ void menu(Wallet * w){
                         printf("%d ",blocoaux.bloco.data[i-2]);
                         printf("%d ",blocoaux.bloco.data[i-1]);
                 }
-                printf("\n");
+                printf("\nHash Anterior: ");
+                printhash(blocoaux.bloco.hashAnterior);
             break;
 
             case 2:
@@ -156,7 +162,7 @@ void menu(Wallet * w){
             case 4:
                 printf("\nQuantidades de BTC ordenadas de menor para maior: \n");
                 for (int i = 0; i<256; i++){
-                    printf("|Wallet: %d = BTC$:%d,00|\n", w[i].endereco, w[i].valor);
+                    printf("|Wallet: %03d = BTC$:%d,00|\n", w[i].endereco, w[i].valor);
                 }
             break;
             case 5: break;
@@ -187,7 +193,7 @@ int main(){
     randNumber = seedRand(1234567);
     Wallet w[256];
 
-     do{
+    do{
 
         printf("\n\t\t||Menu||");
         printf("\n1-Gerar nova Blockchain");
@@ -214,7 +220,7 @@ int main(){
             break;
         }
 
-     }while(aux!=3);
+    }while(aux!=3);
     
 
     return 0;
